@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leonardo Pablo — Programa de Entrenamiento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0c0c0d;
+    --panel:#18181a;
+    --panel-2:#212123;
+    --stripe:#141415;
+    --border:#3a3a3d;
+    --border-soft:#2a2a2c;
+    --text:#f3f3f3;
+    --text-dim:#a8a8ac;
+    --text-faint:#77777b;
+    --white:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Red Hat Display', Arial, Helvetica, sans-serif;
+    font-size:14px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px;}
+
+  header.top{
+    background:linear-gradient(180deg,#151516 0%, #0c0c0d 100%);
+    border-bottom:1px solid var(--border);
+    padding:36px 0 0 0;
+  }
+  .brand-row{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:18px;padding-bottom:24px;}
+  .brand-title{
+    font-weight:900;
+    font-size:clamp(28px,4vw,44px);
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    color:var(--white);
+    margin:0;
+  }
+  .brand-sub{color:var(--text-dim);font-weight:500;font-size:14px;margin-top:6px;letter-spacing:0.3px;}
+  .brand-tag{
+    font-size:11px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    font-weight:700;
+    border:1px solid var(--border);
+    padding:6px 12px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+  .kpis{display:flex;gap:10px;flex-wrap:wrap;padding-bottom:24px;}
+  .kpi{
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    border-radius:10px;
+    padding:10px 16px;
+    min-width:120px;
+  }
+  .kpi .k-label{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-faint);font-weight:700;}
+  .kpi .k-value{font-size:17px;font-weight:800;color:var(--white);margin-top:3px;}
+
+  nav.tabs{
+    display:flex;
+    gap:4px;
+    overflow-x:auto;
+    padding:0 0 0 0;
+    border-bottom:1px solid var(--border);
+    background:#0c0c0d;
+    position:sticky;
+    top:0;
+    z-index:50;
+    scrollbar-width:thin;
+  }
+  nav.tabs .tab-inner{display:flex;gap:4px;padding:0 20px;max-width:1180px;margin:0 auto;width:100%;}
+  nav.tabs button{
+    appearance:none;
+    background:transparent;
+    border:none;
+    color:var(--text-dim);
+    font-family:inherit;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:0.3px;
+    text-transform:uppercase;
+    padding:14px 16px;
+    cursor:pointer;
+    white-space:nowrap;
+    border-bottom:3px solid transparent;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  nav.tabs button:hover{color:var(--text);}
+  nav.tabs button.active{color:var(--white);border-bottom-color:var(--white);}
+
+  main{padding:28px 0 60px 0;min-height:50vh;}
+  .panel{display:none;}
+  .panel.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  .section-title{
+    font-size:20px;
+    font-weight:800;
+    color:var(--white);
+    margin:0 0 4px 0;
+    letter-spacing:0.2px;
+  }
+  .section-desc{color:var(--text-dim);font-size:13.5px;margin:0 0 18px 0;max-width:760px;}
+
+  .grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;}
+  .grid-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:22px;}
+  @media (max-width:860px){.grid-2{grid-template-columns:1fr;}}
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    border-radius:12px;
+    padding:18px 20px;
+  }
+  .card h3{margin:0 0 4px 0;font-size:14px;color:var(--white);font-weight:800;letter-spacing:0.3px;text-transform:uppercase;}
+  .card p{margin:0;color:var(--text-dim);font-size:13px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{
+    background:var(--panel-2);
+    color:var(--white);
+    text-transform:uppercase;
+    font-size:10.5px;
+    letter-spacing:0.8px;
+    font-weight:800;
+    padding:10px 10px;
+    border-bottom:1px solid var(--border);
+    text-align:left;
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:9px 10px;
+    border-bottom:1px solid var(--border-soft);
+    color:var(--text);
+    vertical-align:top;
+  }
+  tbody tr:nth-child(even){background:var(--stripe);}
+  tbody tr.cat-row td{
+    background:var(--panel-2);
+    color:var(--white);
+    font-weight:800;
+    text-transform:uppercase;
+    font-size:11px;
+    letter-spacing:1px;
+    padding:8px 10px;
+    border-top:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+  }
+  .muted{color:var(--text-faint);}
+  .num{font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .table-scroll{overflow-x:auto;border:1px solid var(--border-soft);border-radius:12px;}
+  .table-scroll table{min-width:760px;}
+  .table-scroll.wide table{min-width:980px;}
+
+  .chip-total{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--panel-2);border:1px solid var(--border);
+    border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--text-dim);
+  }
+  .chip-total b{color:var(--white);font-size:14px;}
+  .totals-row{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 20px 0;}
+
+  .muscle-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;margin-bottom:6px;}
+
+  .chart-box{background:var(--panel);border:1px solid var(--border-soft);border-radius:12px;padding:16px;height:260px;}
+
+  .legend-note{font-size:12px;color:var(--text-faint);margin-top:10px;}
+  .legend-note b{color:var(--text-dim);}
+
+  footer.site{
+    border-top:1px solid var(--border);
+    background:#0a0a0b;
+    padding:26px 0;
+    text-align:center;
+  }
+  footer.site .foot-name{font-weight:800;color:var(--white);letter-spacing:0.3px;}
+  footer.site .foot-sub{color:var(--text-faint);font-size:12px;margin-top:4px;}
+
+  ::-webkit-scrollbar{height:8px;width:8px;}
+  ::-webkit-scrollbar-thumb{background:#333;border-radius:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand-row">
+      <div>
+        <p class="brand-title">Leonardo Pablo</p>
+        <p class="brand-sub">Programa de Entrenamiento &middot; Mesociclo &middot; Semanas 1&ndash;4</p>
+      </div>
+      <div class="brand-tag">Head Coach Leonardo Pablo</div>
+    </div>
+    <div class="kpis" id="kpiRow"></div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tab-inner" id="tabBar"></div>
+</nav>
+
+<main class="wrap" id="mainContent"></main>
+
+<footer class="site">
+  <div class="foot-name">Leonardo Pablo &middot; Head Coach</div>
+  <div class="foot-sub">Todos los derechos reservados</div>
+</footer>
+
+<script>
+const DATA = {"facts": {"nombre": "Leonardo Pablo", "edad": "33 → 34", "peso": "94 → 90 kg", "estatura": "177 cm", "kcal": "2,630 – 2,900 kcal", "proteina_g_kg": "2.2 - 2.5 g/kg"}, "nutrition": {"meals": [{"hora": "7:00", "alimento": "1.5 scoop de proteína whey (25 g proteína) con leche de coco y berries, y 1 taza de avena", "kcal": 550, "supl": "Probióticos, kéfir, guayaba, creatina, vitamina C"}, {"hora": "11:00", "alimento": "4 claras de huevo + 2 huevos con 40 g de jamón o panela, 1½ taza de arroz al vapor, 1 taza de verdura cocida, 1 manzana o 1 taza de piña con yogurt griego y 1 cucharada de miel", "kcal": 680, "supl": "Triple omega, vitamina E"}, {"hora": "15:00", "alimento": "250 g de pechuga de pollo, brócoli o chayote cocido, 2 tazas de arroz al vapor, ½ aguacate", "kcal": 820, "supl": ""}, {"hora": "18:00", "alimento": "1 bowl de avena cocida con plátano, 150 ml de leche deslactosada, 10 mitades de nuez y 1 cucharada de miel", "kcal": 490, "supl": ""}, {"hora": "21:00", "alimento": "200 g de pescado asado, ensalada verde al gusto, 1 cucharada de aceite de oliva", "kcal": 360, "supl": "Triple omega, resveratrol"}], "macros": [{"nombre": "Proteína", "cantidad": "2.5 g / kg de peso", "gramos": "235 g", "kcal": "940 kcal"}, {"nombre": "Grasa", "cantidad": "0.8 g / kg de peso", "gramos": "75 g", "kcal": "675 kcal"}, {"nombre": "Carbohidratos", "cantidad": "El resto de las calorías", "gramos": "334 g", "kcal": "1,336 kcal"}], "totalKcal": 2900}, "mesociclo": [[1, "Introducción", "Acondicionamiento y ajuste de cargas tras el periodo anterior.", "18-20", "RPE 7 / 70%"], [2, "Carga I", "Incremento de volumen. Foco en conexión mente-músculo.", "24-26", "RPE 8 / 75%"], [3, "Carga II", "Sobrecarga progresiva. Aumento de peso o repeticiones.", "28-32", "RPE 8.5 / 80%"], [4, "Recuperación Activa", "Descarga. Reducción drástica de volumen para disipar fatiga.", "16", "RPE 6 / 60%"], [5, "Carga III", "Pico de volumen. Máxima estimulación de fibras.", "26-28", "RPE 8.5 / 75-80%"], [6, "Carga IV", "Overreaching controlado. Intensidad máxima.", "28-32", "RPE 9 / 85%"], [7, "Pico / Choque", "Máximo esfuerzo antes de la descarga final. Uso de técnicas de intensidad.", "32-34", "RPE 10 / 90%"], [8, "Descarga Final", "Supercompensación. Preparación para el siguiente mesociclo.", "18", "RPE 5 / 50%"]], "muscles": {"Shoulder": [{"cat": "Musculo Rezagado", "combo": "A", "name": "EZ Bar Front High Rise ", "S1": [3, 12], "S2": [3, 12], "S3": [3, 12], "S4": [3, 12], "tempo": "1-0-1", "rir": 2, "rest": "40\""}, {"cat": "Musculo Rezagado", "combo": "A", "name": "Shoulder press en maquina", "S1": [3, 15], "S2": [3, 15], "S3": [3, 15], "S4": [3, 15], "tempo": "2-0-2", "rir": 2, "rest": "40\""}, {"cat": "Musculo Rezagado", "combo": "A", "name": "super rom lateral raise", "S1": [3, 12], "S2": [3, 12], "S3": [3, 12], "S4": [3, 12], "tempo": "1-0-1", "rir": 3, "rest": "40\""}, {"cat": "Musculo principal", "combo": "B", "name": "Db Shoulder press", "S1": [4, 10], "S2": [4, 10], "S3": [5, 10], "S4": [3, 10], "tempo": "2-0-1", "rir": 2, "rest": "75\""}, {"cat": "Musculo principal", "combo": "C", "name": "Arnold Press", "S1": [4, 12], "S2": [4, 12], "S3": [5, 12], "S4": [2, 12], "tempo": "2-0-1", "rir": 2, "rest": "75\""}, {"cat": "Musculo principal", "combo": "D", "name": "Cross body cable front raise ", "S1": [3, 15], "S2": [4, 15], "S3": [5, 15], "S4": [2, 15], "tempo": "2-0-1", "rir": 2, "rest": "45\""}, {"cat": "Musculo principal", "combo": "D", "name": "Lateral Raise 45º", "S1": [3, 15], "S2": [4, 15], "S3": [5, 15], "S4": [2, 15], "tempo": "2-0-1", "rir": 2, "rest": "45\""}, {"cat": "Musculo principal", "combo": "E", "name": "Lateral Raise Neturo Position", "S1": ["na", 15], "S2": [4, 15], "S3": [5, 15], "S4": [2, 15], "tempo": "2-1-1", "rir": 1, "rest": "45\""}, {"cat": "Musculo principal", "combo": "E", "name": "Super rom reverse fly", "S1": ["na", 12], "S2": [4, 12], "S3": [5, 12], "S4": [2, 12], "tempo": "2-1-1", "rir": 1, "rest": "45\""}, {"cat": "Musculo principal", "combo": "E", "name": "Reverse Peck deck", "S1": [4, 12], "S2": [4, 12], "S3": [6, 12], "S4": [3, 12], "tempo": "2-0-2", "rir": 2, "rest": "45\""}, {"cat": "Complementarios", "combo": "F", "name": "Shrugs", "S1": [4, 18], "S2": [5, 18], "S3": [6, 18], "S4": [3, 18], "tempo": "1-1-1", "rir": 2, "rest": "45\""}, {"cat": "Complementarios", "combo": "F", "name": "Roll Abs", "S1": [4, 18], "S2": [5, 18], "S3": [6, 18], "S4": [3, 18], "tempo": "2-0-2", "rir": 1, "rest": "30\""}], "Quads": [{"cat": "Musculo Rezagado", "combo": "A", "name": "EZ Bar Front High Rise ", "S1": [3, 15], "S2": [3, 15], "S3": [3, null], "S4": [3, 15], "tempo": "1-0-1", "rir": 2, "rest": "40\""}, {"cat": "Musculo Rezagado", "combo": "A", "name": "Shoulder press en maquina", "S1": [3, 12], "S2": [3, null], "S3": [3, null], "S4": [3, 12], "tempo": "2-0-2", "rir": 2, "rest": "40\""}, {"cat": "Musculo Rezagado", "combo": "A", "name": "Super rom lateral raise", "S1": [3, 21], "S2": [3, null], "S3": [3, null], "S4": [3, 21], "tempo": "1-0-1", "rir": 3, "rest": "40\""}, {"cat": "Musculo principal", "combo": "B", "name": "Lunges Dumbells", "S1": [2, 15], "S2": ["NA", null], "S3": [2, 15], "S4": [4, 15], "tempo": "1-0-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": "B", "name": "Aductor", "S1": [2, 20], "S2": [2, 20], "S3": [2, 20], "S4": [4, 20], "tempo": "1-0-1", "rir": 2, "rest": "50\""}, {"cat": "Musculo principal", "combo": "C", "name": "Back squat", "S1": [4, 12], "S2": [4, 12], "S3": [5, 12], "S4": [4, 12], "tempo": "1-0-1", "rir": 1, "rest": "90\""}, {"cat": "Musculo principal", "combo": "D", "name": "Front Squat", "S1": ["NA", "NA"], "S2": ["NA", null], "S3": [5, 8], "S4": ["na", null], "tempo": "2-0-1", "rir": 1, "rest": "90\""}, {"cat": "Musculo principal", "combo": "E", "name": "Sissy Squat", "S1": ["NA", 15], "S2": ["NA", null], "S3": [4, 15], "S4": ["na", 15], "tempo": "2-0-2", "rir": 1, "rest": "60\""}, {"cat": "Musculo principal", "combo": "E", "name": "Hack squat", "S1": ["NA", 10], "S2": [3, 10], "S3": [4, 10], "S4": ["na", 10], "tempo": "2-0-1", "rir": 1, "rest": "60\""}, {"cat": "Musculo principal", "combo": "F", "name": "Glovet Squat", "S1": ["NA", "NA"], "S2": [3, 12], "S3": [2, 12], "S4": ["na", null], "tempo": "2-0-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": "F", "name": "Step Araise one leg", "S1": ["NA", "NA"], "S2": [3, 12], "S3": [2, 12], "S4": ["na", null], "tempo": "2-0-1", "rir": 2, "rest": "45\""}, {"cat": "Musculo principal", "combo": "G", "name": "Bulgarian squat", "S1": [4, 12], "S2": [3, 12], "S3": [4, 12], "S4": [3, 12], "tempo": "2-0-1", "rir": 3, "rest": "60\""}, {"cat": "Musculo principal", "combo": "H", "name": "Leg press al centro", "S1": [2, 10], "S2": [2, 10], "S3": ["na", null], "S4": ["na", 10], "tempo": "2-0-1", "rir": "na", "rest": "45\""}, {"cat": "Musculo principal", "combo": "H", "name": "Leg press cerrado abajo", "S1": [2, 10], "S2": [2, 10], "S3": ["na", null], "S4": ["na", 10], "tempo": "2-0-1", "rir": "na", "rest": "45\""}, {"cat": "Musculo principal", "combo": "J", "name": "Leg extension", "S1": [2, 12], "S2": [3, 12], "S3": [3, 12], "S4": [2, 12], "tempo": "2-0-1", "rir": 2, "rest": "45\""}, {"cat": "Musculo principal", "combo": "J", "name": "leg long xtension", "S1": [2, 12], "S2": [3, 12], "S3": [3, 12], "S4": [2, 12], "tempo": "2-0-1", "rir": 2, "rest": "45\""}, {"cat": "Complementarios", "combo": "k", "name": "Costurera", "S1": [4, 15], "S2": [4, 15], "S3": [4, 15], "S4": [4, 15], "tempo": "1-1-1", "rir": 2, "rest": "30\""}, {"cat": "Complementarios", "combo": "k", "name": "Elevacion de talones prensa", "S1": [4, 21], "S2": [4, 21], "S3": [4, 21], "S4": [4, 21], "tempo": "1-1-1", "rir": 1, "rest": "30\""}], "Back": [{"cat": "Musculo Rezagado", "combo": "A", "name": "EZ Bar Front High Rise ", "S1": [3, 12], "S2": [3, 12], "S3": [3, 12], "S4": [3, 12], "tempo": "1-0-1", "rir": 2, "rest": "40\""}, {"cat": "Musculo Rezagado", "combo": "A", "name": "Shoulder press en maquina", "S1": [3, 15], "S2": [3, 15], "S3": [3, 15], "S4": [3, 15], "tempo": "2-0-2", "rir": 2, "rest": "40\""}, {"cat": "Musculo Rezagado", "combo": "A", "name": "super rom lateral raise", "S1": [3, 12], "S2": [3, 12], "S3": [3, 12], "S4": [3, 12], "tempo": "1-0-1", "rir": 3, "rest": "40\""}, {"cat": "Musculo principal", "combo": "B", "name": "Pull ups", "S1": [2, 6], "S2": [3, 6], "S3": [3, 6], "S4": [2, 6], "tempo": "2-0-1", "rir": 2, "rest": "90\""}, {"cat": "Musculo principal", "combo": "B", "name": "Chin Ups", "S1": [2, 6], "S2": [2, 6], "S3": [3, 6], "S4": [1, 6], "tempo": "2-0-1", "rir": 2, "rest": "90\""}, {"cat": "Musculo principal", "combo": "B", "name": "Neutral Pull Ups", "S1": [2, 6], "S2": [2, 6], "S3": [2, 6], "S4": [2, 6], "tempo": "2-0-1", "rir": 2, "rest": "90\""}, {"cat": "Musculo principal", "combo": "C", "name": "Half Kneeling Lat pull down", "S1": [4, 12], "S2": [4, 12], "S3": [5, 12], "S4": [3, 12], "tempo": "2-0-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": "C", "name": "Lat pull down", "S1": ["na", null], "S2": [3, 12], "S3": [3, 12], "S4": ["na", null], "tempo": "2-0-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": "D", "name": "Bumbell Pull Over", "S1": [4, 15], "S2": [4, 15], "S3": [5, 15], "S4": [2, 15], "tempo": "3-0-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": "D", "name": "Cross Body lat pull arround", "S1": ["na", null], "S2": ["na", null], "S3": [2, 12], "S4": ["na", null], "tempo": "2-0-1", "rir": 2, "rest": "45\""}, {"cat": "Musculo principal", "combo": "E", "name": "V grip Lat pull down", "S1": ["na", null], "S2": ["na", null], "S3": ["na", null], "S4": ["na", null], "tempo": null, "rir": null, "rest": null}, {"cat": "Musculo principal", "combo": "E", "name": "barbell row", "S1": ["na", null], "S2": ["na", null], "S3": ["na", null], "S4": ["na", null], "tempo": null, "rir": null, "rest": null}, {"cat": "Musculo principal", "combo": "F", "name": "Yates row", "S1": [3, 12], "S2": [3, 12], "S3": [4, 12], "S4": [2, 12], "tempo": "1-1-1", "rir": 1, "rest": "75\""}, {"cat": "Musculo principal", "combo": "G", "name": "Kcroc Row", "S1": ["na", null], "S2": ["na", null], "S3": ["na", null], "S4": ["na", null], "tempo": null, "rir": null, "rest": null}, {"cat": "Musculo principal", "combo": "G", "name": "Cable Row", "S1": ["na", null], "S2": ["na", null], "S3": [3, 12], "S4": [2, 12], "tempo": "1-0-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": "G", "name": "T bar", "S1": ["na", null], "S2": ["na", null], "S3": ["na", null], "S4": ["na", null], "tempo": null, "rir": null, "rest": null}, {"cat": "Musculo principal", "combo": "G", "name": "Chest Suported Row", "S1": ["na", null], "S2": ["na", null], "S3": ["na", null], "S4": ["na", null], "tempo": null, "rir": null, "rest": null}, {"cat": "Musculo principal", "combo": "H", "name": "Medows Row", "S1": ["na", null], "S2": ["na", null], "S3": ["na", null], "S4": ["na", null], "tempo": null, "rir": null, "rest": null}, {"cat": "Musculo principal", "combo": "I", "name": "Inverted row", "S1": [3, 18], "S2": [3, 18], "S3": [3, 18], "S4": [2, 18], "tempo": "2-0-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": "I", "name": "One arm dumbell row", "S1": ["na", null], "S2": ["na", null], "S3": [3, 10], "S4": ["na", null], "tempo": "2-0-1", "rir": 2, "rest": "60\""}, {"cat": "Complementarios", "combo": "J", "name": "sit ups", "S1": [3, 15], "S2": [3, 15], "S3": [4, 15], "S4": [2, 15], "tempo": "1-0-1", "rir": 2, "rest": "30\""}, {"cat": "Complementarios", "combo": "J", "name": "crunch", "S1": [3, 20], "S2": [3, 20], "S3": [4, 20], "S4": [2, 20], "tempo": "1-0-1", "rir": 2, "rest": "30\""}], "Chest": [{"cat": "Musculo Rezagado", "combo": "A", "name": "EZ Bar Front High Rise ", "S1": [3, 12], "S2": [3, 12], "S3": [3, 12], "S4": [3, 12], "tempo": "1-0-1", "rir": 2, "rest": "40\""}, {"cat": "Musculo Rezagado", "combo": "A", "name": "Shoulder press en maquina", "S1": [3, 15], "S2": [3, 15], "S3": [3, 15], "S4": [3, 15], "tempo": "2-0-2", "rir": 2, "rest": "40\""}, {"cat": "Musculo Rezagado", "combo": "A", "name": "super rom lateral raise", "S1": [3, 12], "S2": [3, 12], "S3": [3, 12], "S4": [3, 12], "tempo": "1-0-1", "rir": 3, "rest": "40\""}, {"cat": "Musculo principal", "combo": null, "name": "Pull over", "S1": [3, 15], "S2": [4, 12], "S3": [4, 15], "S4": [4, 15], "tempo": "2-0-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": null, "name": "Dips", "S1": [3, 15], "S2": [4, 10], "S3": [4, 15], "S4": [4, 15], "tempo": "2-0-1", "rir": 2, "rest": "75\""}, {"cat": "Musculo principal", "combo": null, "name": "Bench press", "S1": [3, 12], "S2": [4, 12], "S3": [3, 12], "S4": [4, 12], "tempo": "2-0-1", "rir": 1, "rest": "90\""}, {"cat": "Musculo principal", "combo": null, "name": "Incline Bench press", "S1": [3, 12], "S2": [3, 8], "S3": [3, 20], "S4": [4, 12], "tempo": "2-0-1", "rir": 2, "rest": "90\""}, {"cat": "Musculo principal", "combo": null, "name": "DB Decline Bench Press", "S1": ["na", null], "S2": [3, 8], "S3": [3, 20], "S4": ["na", null], "tempo": "2-0-1", "rir": 2, "rest": "75\""}, {"cat": "Musculo principal", "combo": null, "name": "Flat DB press", "S1": ["na", null], "S2": [3, 10], "S3": [4, 12], "S4": [4, 12], "tempo": "2-0-1", "rir": 2, "rest": "75\""}, {"cat": "Musculo principal", "combo": null, "name": "Incline db press", "S1": ["na", null], "S2": [4, 10], "S3": [4, 12], "S4": [4, 12], "tempo": "2-0-1", "rir": 2, "rest": "75\""}, {"cat": "Musculo principal", "combo": null, "name": "Chest press machine", "S1": ["na", null], "S2": ["na", null], "S3": ["na", null], "S4": [4, 12], "tempo": "1-0-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": null, "name": "one arm db press", "S1": ["na", null], "S2": ["na", null], "S3": ["na", null], "S4": ["na", null], "tempo": null, "rir": null, "rest": null}, {"cat": "Musculo principal", "combo": null, "name": "Smith machine", "S1": ["na", null], "S2": ["na", null], "S3": ["na", null], "S4": [4, 12], "tempo": "2-0-1", "rir": 2, "rest": "75\""}, {"cat": "Musculo principal", "combo": null, "name": "cable crossover decline", "S1": [4, 20], "S2": ["na", null], "S3": ["na", null], "S4": ["na", null], "tempo": "1-0-1", "rir": 2, "rest": "45\""}, {"cat": "Musculo principal", "combo": null, "name": "pec fly", "S1": ["na", null], "S2": [3, 20], "S3": [3, 20], "S4": [3, 21], "tempo": "1-0-1", "rir": 2, "rest": "45\""}, {"cat": "Musculo principal", "combo": null, "name": "flat DB fly partial-full", "S1": ["na", null], "S2": [3, 20], "S3": [2, 20], "S4": ["na", null], "tempo": "1-0-1", "rir": 2, "rest": "45\""}, {"cat": "Musculo principal", "combo": null, "name": "Cable press around", "S1": [3, 20], "S2": ["na", null], "S3": [3, 12], "S4": ["na", null], "tempo": "1-0-1", "rir": 2, "rest": "45\""}, {"cat": "Musculo principal", "combo": null, "name": "cross over standing over", "S1": [3, 12], "S2": ["na", null], "S3": [3, 12], "S4": ["na", null], "tempo": "1-0-1", "rir": 2, "rest": "45\""}], "Arms": [{"cat": "Musculo Rezagado", "combo": "A", "name": "EZ Bar Front High Rise ", "S1": [3, 12], "S2": [3, 12], "S3": [3, 12], "S4": [3, 12], "tempo": "1-0-1", "rir": 2, "rest": "40\""}, {"cat": "Musculo Rezagado", "combo": "A", "name": "Shoulder press en maquina", "S1": [3, 15], "S2": [3, 15], "S3": [3, 15], "S4": [3, 15], "tempo": "2-0-2", "rir": 2, "rest": "40\""}, {"cat": "Musculo Rezagado", "combo": "A", "name": "super rom lateral raise", "S1": [3, 12], "S2": [3, 12], "S3": [3, 12], "S4": [3, 12], "tempo": "1-0-1", "rir": 3, "rest": "40\""}, {"cat": "Musculo principal", "combo": "B", "name": "Dumbbell Preacher Curl", "S1": [2, 10], "S2": [2, 10], "S3": [3, 10], "S4": [2, 10], "tempo": "2-0-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": "C", "name": "Machine Preacher Curl", "S1": [2, 12], "S2": [2, 12], "S3": [3, 12], "S4": [2, 12], "tempo": "1-1-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": "D", "name": "EZ Bar Curl", "S1": ["na", null], "S2": [2, 8], "S3": [3, 8], "S4": ["na", null], "tempo": "2-0-1", "rir": 1, "rest": "75\""}, {"cat": "Musculo principal", "combo": "E", "name": "Incline Dumbbell Curl", "S1": [2, 12], "S2": [2, 12], "S3": [3, 12], "S4": [2, 12], "tempo": "3-0-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": "F", "name": "Standing Cable Curl", "S1": [2, 15], "S2": [2, 15], "S3": [3, 15], "S4": [2, 15], "tempo": "1-0-1", "rir": 2, "rest": "45\""}, {"cat": "Musculo principal", "combo": "G", "name": "Hammer Curl", "S1": [2, 12], "S2": [2, 12], "S3": [3, 12], "S4": [2, 12], "tempo": "2-0-1", "rir": 2, "rest": "45\""}, {"cat": "Musculo principal", "combo": "H", "name": "Overhead Cable Rope Extension", "S1": [2, 15], "S2": [2, 15], "S3": [3, 15], "S4": [2, 15], "tempo": "3-0-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": "I", "name": "Cable Rope Pushdown", "S1": [2, 12], "S2": [2, 12], "S3": [3, 12], "S4": [2, 12], "tempo": "1-0-1", "rir": 2, "rest": "45\""}, {"cat": "Musculo principal", "combo": "J", "name": "JM Press", "S1": ["na", null], "S2": [2, 6], "S3": [3, 6], "S4": ["na", null], "tempo": "2-0-1", "rir": 1, "rest": "90\""}, {"cat": "Musculo principal", "combo": "K", "name": "Close-Grip Bench Press", "S1": [2, 6], "S2": [2, 6], "S3": [3, 6], "S4": ["na", null], "tempo": "2-0-1", "rir": 1, "rest": "90\""}, {"cat": "Musculo principal", "combo": "L", "name": "Skullcrusher (Barbell)", "S1": [2, 10], "S2": [2, 10], "S3": [3, 10], "S4": [2, 10], "tempo": "2-0-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": "M", "name": "Close-Grip Dips", "S1": [2, 10], "S2": [2, 10], "S3": [3, 10], "S4": ["na", null], "tempo": "2-0-1", "rir": 2, "rest": "75\""}], "Hams & Glutes": [{"cat": "Musculo Rezagado", "combo": "A", "name": "EZ Bar Front High Rise ", "S1": [3, 12], "S2": [3, 12], "S3": [3, 12], "S4": [3, 12], "tempo": "1-0-1", "rir": 2, "rest": "40\""}, {"cat": "Musculo Rezagado", "combo": "A", "name": "Shoulder press en maquina", "S1": [3, 15], "S2": [3, 15], "S3": [3, 15], "S4": [3, 15], "tempo": "2-0-2", "rir": 2, "rest": "40\""}, {"cat": "Musculo Rezagado", "combo": "A", "name": "super rom lateral raise", "S1": [3, 12], "S2": [3, 12], "S3": [3, 12], "S4": [3, 12], "tempo": "1-0-1", "rir": 3, "rest": "40\""}, {"cat": "Musculo principal", "combo": "B", "name": "Hip thruster machine", "S1": [4, 12], "S2": [4, 12], "S3": [5, 12], "S4": [2, 12], "tempo": "2-0-1", "rir": 2, "rest": "75\""}, {"cat": "Musculo principal", "combo": "B", "name": "Abductor", "S1": [4, 12], "S2": [4, 12], "S3": [4, 12], "S4": [2, 12], "tempo": "1-1-1", "rir": 2, "rest": "45\""}, {"cat": "Musculo principal", "combo": "C", "name": "Back Squat", "S1": [4, 8], "S2": [4, 8], "S3": [5, 8], "S4": [3, 8], "tempo": "2-0-1", "rir": 1, "rest": "120\""}, {"cat": "Musculo principal", "combo": "D", "name": "BUlgarian squat", "S1": [3, 12], "S2": [3, 12], "S3": [4, 12], "S4": [2, 12], "tempo": "2-0-1", "rir": 2, "rest": "75\""}, {"cat": "Musculo principal", "combo": "E", "name": "Rumanian DL", "S1": [4, 10], "S2": [4, 10], "S3": [4, 10], "S4": [3, 10], "tempo": "3-0-1", "rir": 1, "rest": "90\""}, {"cat": "Musculo principal", "combo": null, "name": "Leg curl", "S1": ["na", null], "S2": [3, 12], "S3": [4, 12], "S4": [2, 12], "tempo": "2-0-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": null, "name": "Sit down leg curl", "S1": ["na", null], "S2": ["na", null], "S3": [3, 12], "S4": ["na", null], "tempo": "2-1-1", "rir": 2, "rest": "45\""}, {"cat": "Musculo principal", "combo": null, "name": "leg press up and clouse", "S1": ["na", null], "S2": ["na", null], "S3": ["na", null], "S4": ["na", null], "tempo": null, "rir": null, "rest": null}, {"cat": "Musculo principal", "combo": null, "name": "leg press machine", "S1": ["na", null], "S2": [3, 12], "S3": [4, 12], "S4": ["na", null], "tempo": "1-0-1", "rir": 2, "rest": "60\""}, {"cat": "Musculo principal", "combo": null, "name": "Sumo Rumanian DL", "S1": ["na", null], "S2": ["na", null], "S3": [3, 10], "S4": ["na", null], "tempo": "2-0-1", "rir": 1, "rest": "90\""}, {"cat": "Musculo principal", "combo": null, "name": "Lunges", "S1": ["na", null], "S2": ["na", null], "S3": ["na", null], "S4": [2, 12], "tempo": "2-0-1", "rir": 2, "rest": "60\""}, {"cat": "Complementarios", "combo": null, "name": "calvs elevation", "S1": [3, 15], "S2": [3, 15], "S3": [4, 15], "S4": [2, 15], "tempo": "1-1-1", "rir": 2, "rest": "30\""}, {"cat": "Complementarios", "combo": null, "name": "calv in machine ", "S1": [3, 20], "S2": [3, 20], "S3": [4, 20], "S4": [2, 20], "tempo": "1-1-1", "rir": 2, "rest": "30\""}]}, "totals": {"Shoulder": {"S1": 18, "S2": 28, "S3": 36, "S4": 16}, "Quads": {"S1": 20, "S2": 28, "S3": 36, "S4": 19}, "Back": {"S1": 20, "S2": 24, "S3": 36, "S4": 16}, "Chest": {"S1": 22, "S2": 31, "S3": 36, "S4": 35}, "Arms": {"S1": 20, "S2": 24, "S3": 36, "S4": 16}, "Hams & Glutes": {"S1": 19, "S2": 25, "S3": 36, "S4": 16}}};
+
+const MUSCLE_LABELS = {"Shoulder": "Hombro", "Quads": "Cuádriceps", "Back": "Espalda", "Chest": "Pecho", "Arms": "Brazos", "Hams & Glutes": "Isquios y Glúteos"};
+
+const WEEK_META = [
+  {key:'S1', label:'Semana 1', phase:'Adaptación', intensity:'RPE 7 / 70%'},
+  {key:'S2', label:'Semana 2', phase:'Carga 1', intensity:'RPE 8 / 75%'},
+  {key:'S3', label:'Semana 3', phase:'Carga 2 · Pico', intensity:'RPE 8.5 / 80%'},
+  {key:'S4', label:'Semana 4', phase:'Recuperación activa', intensity:'RPE 6 / 60%'},
+];
+
+const TABS = [
+  {id:'resumen', label:'Resumen'},
+  {id:'nutricion', label:'Nutrición'},
+  ...Object.keys(DATA.muscles).map(m => ({id:'m-'+m, label:MUSCLE_LABELS[m] || m}))
+];
+
+function fmtSet(pair){
+  const s = pair[0], r = pair[1];
+  const isNa = (v)=> v===null || v===undefined || (typeof v === 'string' && v.toLowerCase()==='na');
+  if(isNa(s)) return '<span class="muted">—</span>';
+  return `<span class="num">${s}×${isNa(r)?'—':r}</span>`;
+}
+
+function buildTabs(){
+  const bar = document.getElementById('tabBar');
+  bar.innerHTML = TABS.map((t,i)=>`<button data-tab="${t.id}" class="${i===0?'active':''}">${t.label}</button>`).join('');
+  bar.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=> activateTab(btn.dataset.tab));
+  });
+}
+
+function activateTab(id){
+  document.querySelectorAll('nav.tabs button').forEach(b=> b.classList.toggle('active', b.dataset.tab===id));
+  document.querySelectorAll('.panel').forEach(p=> p.classList.toggle('active', p.id===('panel-'+id)));
+  renderChartsFor(id);
+}
+
+function buildKpis(){
+  const f = DATA.facts;
+  const items = [
+    ['Edad', f.edad],
+    ['Peso', f.peso],
+    ['Estatura', f.estatura],
+    ['Calorías objetivo', f.kcal],
+    ['Proteína', f.proteina_g_kg],
+  ];
+  document.getElementById('kpiRow').innerHTML = items.map(([k,v])=>
+    `<div class="kpi"><div class="k-label">${k}</div><div class="k-value">${v}</div></div>`
+  ).join('');
+}
+
+function renderResumen(){
+  const meso = DATA.mesociclo;
+  const mesoRows = meso.map(row=>{
+    const [num,tipo,obj,series,intens] = row;
+    const active = num<=4;
+    return `<tr${active?'':' style="opacity:.45"'}>
+      <td class="num">${num}</td>
+      <td>${tipo}</td>
+      <td>${obj}</td>
+      <td class="num">${series}</td>
+      <td class="num">${intens}</td>
+    </tr>`;
+  }).join('');
+
+  const totalsRows = Object.entries(DATA.totals).map(([m,t])=>{
+    return `<tr>
+      <td>${MUSCLE_LABELS[m]||m}</td>
+      <td class="num">${t.S1}</td>
+      <td class="num">${t.S2}</td>
+      <td class="num">${t.S3}</td>
+      <td class="num">${t.S4}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+  <h2 class="section-title">Resumen general</h2>
+  <p class="section-desc">Este bloque cubre las semanas 1 a 4 del mesociclo completo: adaptación, primera carga, pico de volumen al 80% de carga (36 series por grupo muscular) y recuperación activa. El músculo rezagado (superserie A) se entrena igual todos los días del ciclo.</p>
+
+  <div class="grid-2" style="margin-bottom:26px;">
+    <div class="card">
+      <h3>Series por grupo muscular &middot; semanas 1&ndash;4</h3>
+      <p style="margin-bottom:12px;">Total de series de músculo principal por semana (no incluye superserie de músculo rezagado ni accesorios).</p>
+      <div class="chart-box"><canvas id="chart-resumen"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Series por semana &middot; detalle</h3>
+      <div class="table-scroll" style="border:none;">
+        <table>
+          <thead><tr><th>Grupo</th><th>S1</th><th>S2</th><th>S3</th><th>S4</th></tr></thead>
+          <tbody>${totalsRows}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="section-title" style="font-size:16px;">Mesociclo completo (referencia)</h3>
+  <p class="section-desc">Semanas 1&ndash;4 en curso; semanas 5&ndash;8 quedan atenuadas como referencia del siguiente bloque.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Semana</th><th>Tipo de carga</th><th>Objetivo</th><th>Series / semana</th><th>Intensidad</th></tr></thead>
+      <tbody>${mesoRows}</tbody>
+    </table>
+  </div>
+  `;
+}
+
+function renderNutricion(){
+  const n = DATA.nutrition;
+  const meals = n.meals.map(m=>`
+    <tr>
+      <td class="num">${m.hora}</td>
+      <td>${m.alimento}</td>
+      <td class="num">${m.kcal}</td>
+      <td class="muted">${m.supl||'—'}</td>
+    </tr>`).join('');
+  const macros = n.macros.map(m=>`
+    <tr><td>${m.nombre}</td><td>${m.cantidad}</td><td class="num">${m.gramos}</td><td class="num">${m.kcal}</td></tr>
+  `).join('');
+
+  return `
+  <h2 class="section-title">Plan de nutrición</h2>
+  <p class="section-desc">Distribución diaria de comidas y macronutrientes objetivo.</p>
+
+  <div class="totals-row">
+    <div class="chip-total">Total diario &nbsp;<b>${n.totalKcal} kcal</b></div>
+  </div>
+
+  <div class="table-scroll wide" style="margin-bottom:22px;">
+    <table>
+      <thead><tr><th>Hora</th><th>Alimento</th><th>Kcal</th><th>Suplementación</th></tr></thead>
+      <tbody>${meals}</tbody>
+    </table>
+  </div>
+
+  <h3 class="section-title" style="font-size:16px;">Macronutrientes</h3>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Macronutriente</th><th>Cantidad</th><th>Gramos</th><th>Calorías</th></tr></thead>
+      <tbody>${macros}</tbody>
+    </table>
+  </div>
+  `;
+}
+
+function renderMuscle(key){
+  const rows = DATA.muscles[key];
+  const t = DATA.totals[key];
+  let body = '';
+  let lastCat = null;
+  rows.forEach(r=>{
+    if(r.cat !== lastCat){
+      body += `<tr class="cat-row"><td colspan="9">${r.cat}</td></tr>`;
+      lastCat = r.cat;
+    }
+    body += `<tr>
+      <td class="muted num">${r.combo||''}</td>
+      <td>${r.name}</td>
+      <td>${fmtSet(r.S1)}</td>
+      <td>${fmtSet(r.S2)}</td>
+      <td>${fmtSet(r.S3)}</td>
+      <td>${fmtSet(r.S4)}</td>
+      <td class="num">${r.tempo||'—'}</td>
+      <td class="num">${(r.rir===null||r.rir===undefined)?'—':r.rir}</td>
+      <td class="num">${r.rest||'—'}</td>
+    </tr>`;
+  });
+
+  return `
+  <div class="muscle-head">
+    <div>
+      <h2 class="section-title">${MUSCLE_LABELS[key]||key}</h2>
+      <p class="section-desc" style="margin-bottom:0;">Formato series×reps por semana. Tempo, RIR y descanso son fijos para todo el bloque.</p>
+    </div>
+    <div class="totals-row" style="margin:0;">
+      ${WEEK_META.map(w=>`<div class="chip-total">${w.label}&nbsp;<b>${t[w.key]}</b></div>`).join('')}
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin:16px 0 20px 0;">
+    <div class="table-scroll wide" style="grid-column:1/-1;">
+      <table>
+        <thead><tr>
+          <th>Comb.</th><th>Ejercicio</th>
+          <th>S1</th><th>S2</th><th>S3</th><th>S4</th>
+          <th>Tempo</th><th>RIR</th><th>Descanso</th>
+        </tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Series de músculo principal por semana</h3>
+    <div class="chart-box"><canvas id="chart-${key}"></canvas></div>
+    <p class="legend-note">Semana 3 fijada en <b>36 series</b> (80% de carga, pico de volumen). No incluye la superserie de músculo rezagado (9 series fijas cada semana) ni accesorios.</p>
+  </div>
+  `;
+}
+
+const chartInstances = {};
+function grayscaleChart(canvasId, labels, values, opts){
+  const el = document.getElementById(canvasId);
+  if(!el || chartInstances[canvasId]) return;
+  const ctx = el.getContext('2d');
+  chartInstances[canvasId] = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        data: values,
+        backgroundColor: ['#5a5a5e','#8a8a8e','#ffffff','#3a3a3d'],
+        borderRadius:4,
+        maxBarThickness:56,
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{
+        backgroundColor:'#1a1a1a', titleColor:'#fff', bodyColor:'#eee', borderColor:'#3a3a3a', borderWidth:1
+      }},
+      scales:{
+        x:{ ticks:{color:'#a8a8ac', font:{family:"'Red Hat Display'", weight:'600', size:12}}, grid:{display:false} },
+        y:{ beginAtZero:true, ticks:{color:'#77777b', font:{family:"'Red Hat Display'"}}, grid:{color:'#232325'} }
+      }
+    }
+  });
+}
+
+function renderChartsFor(tabId){
+  if(tabId==='resumen'){
+    const labels = WEEK_META.map(w=>w.label.replace('Semana ','S'));
+    // average across muscles for overview chart is less informative; show per-muscle grouped instead via simple total sum
+    const sums = ['S1','S2','S3','S4'].map(wk => Object.values(DATA.totals).reduce((a,t)=>a+t[wk],0));
+    grayscaleChart('chart-resumen', labels, sums);
+  } else if(tabId.startsWith('m-')){
+    const key = tabId.slice(2);
+    const t = DATA.totals[key];
+    const labels = WEEK_META.map(w=>w.label.replace('Semana ','S'));
+    grayscaleChart('chart-'+key, labels, ['S1','S2','S3','S4'].map(k=>t[k]));
+  }
+}
+
+function buildPanels(){
+  const main = document.getElementById('mainContent');
+  let html = '';
+  html += `<div class="panel active" id="panel-resumen">${renderResumen()}</div>`;
+  html += `<div class="panel" id="panel-nutricion">${renderNutricion()}</div>`;
+  Object.keys(DATA.muscles).forEach(key=>{
+    html += `<div class="panel" id="panel-m-${key}">${renderMuscle(key)}</div>`;
+  });
+  main.innerHTML = html;
+}
+
+buildKpis();
+buildTabs();
+buildPanels();
+renderChartsFor('resumen');
+</script>
+</body>
+</html>
