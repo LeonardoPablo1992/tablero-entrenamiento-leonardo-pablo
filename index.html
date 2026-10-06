@@ -292,8 +292,12 @@
   .ex-check:checked{background:var(--white);border-color:var(--white);}
   .ex-check:checked::after{transform:rotate(-45deg) translate(1px,-1px) scale(1);}
   .ex-check:focus-visible{outline:2px solid var(--white);outline-offset:2px;}
-  tbody tr.ex-row.done .ex-name-cell{color:var(--text-faint);text-decoration:line-through;}
-  tbody tr.ex-row.done td.num-cell{color:var(--text-faint);}
+  .wk-check{display:inline-flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;}
+  .wk-check .ex-check{width:18px;height:18px;flex:0 0 auto;}
+  tbody tr.ex-row td.num-cell.done .num{color:var(--text-faint);text-decoration:line-through;font-weight:400;}
+  .check-count{display:inline-flex;gap:8px;flex-wrap:wrap;}
+  .wk-count{border:1px solid var(--border-soft);border-radius:999px;padding:4px 10px;font-size:11px;letter-spacing:.3px;}
+  .wk-count.full{border-color:var(--white);color:var(--white);}
   .check-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0 0 0;font-size:12px;color:var(--text-dim);}
   .check-bar b{color:var(--white);}
   .check-reset{background:transparent;border:1px solid var(--border-soft);color:var(--text-dim);border-radius:999px;padding:5px 12px;font:inherit;font-size:11px;letter-spacing:.3px;cursor:pointer;}
@@ -3409,18 +3413,19 @@ function matrixRowHTML(r, keyPrefix){
   const weekCells = WEEK_META.map(w=>{
     const pair = r[w.key];
     const sets = pair[0];
-    return `<td class="num num-cell${isNaVal(sets)?' off':''}">${fmtSet(pair)}</td>`;
+    if(isNaVal(sets)) return `<td class="num num-cell off">${fmtSet(pair)}</td>`;
+    const ck = checkKey(keyPrefix, r.name) + '::' + w.key;
+    const done = isChecked(ck);
+    const label = `Marcar ${String(r.name).trim().replace(/"/g,'&quot;')} · ${w.label} como realizado`;
+    return `<td class="num num-cell${done?' done':''}" onclick="event.stopPropagation()"><label class="wk-check"><input type="checkbox" class="ex-check" aria-label="${label}" data-ck="${ck}" data-wk="${w.key}" ${done?'checked':''} onchange="onExCheck(this)">${fmtSet(pair)}</label></td>`;
   }).join('');
-  const ck = checkKey(keyPrefix, r.name);
-  const done = isChecked(ck);
-  return `<tr class="ex-row${done?' done':''}" data-target="${id}" onclick="toggleExRow('${id}', this)">
-      <td class="ex-check-cell" onclick="event.stopPropagation()"><input type="checkbox" class="ex-check" aria-label="Marcar ${String(r.name).trim().replace(/"/g,'&quot;')} como realizado" data-ck="${ck}" ${done?'checked':''} onchange="onExCheck(this)"></td>
+  return `<tr class="ex-row" data-target="${id}" onclick="toggleExRow('${id}', this)">
       <td><span class="combo-badge">${r.combo||'·'}</span></td>
       <td class="ex-name-cell"><span class="ex-caret">&#9656;</span>${r.name}</td>
       ${weekCells}
     </tr>
     <tr class="ex-meta-row" id="${id}">
-      <td colspan="${3+WEEK_META.length}">
+      <td colspan="${2+WEEK_META.length}">
         <div class="ex-meta-inline">
           <span><b>Tempo</b> ${r.tempo||'—'}</span>
           <span><b>RIR</b> ${(r.rir===null||r.rir===undefined)?'—':r.rir}</span>
@@ -3430,7 +3435,7 @@ function matrixRowHTML(r, keyPrefix){
     </tr>`;
 }
 
-const CHECK_STORE = 'tablero-lp-realizados-v1';
+const CHECK_STORE = 'tablero-lp-realizados-semana-v2';
 let checkState = {};
 try{ checkState = JSON.parse(localStorage.getItem(CHECK_STORE) || '{}') || {}; }catch(e){ checkState = {}; }
 function saveChecks(){ try{ localStorage.setItem(CHECK_STORE, JSON.stringify(checkState)); }catch(e){} }
@@ -3440,20 +3445,22 @@ function onExCheck(el){
   const k = el.dataset.ck;
   if(el.checked) checkState[k] = true; else delete checkState[k];
   saveChecks();
-  const row = el.closest('tr'); if(row) row.classList.toggle('done', el.checked);
+  const cell = el.closest('td'); if(cell) cell.classList.toggle('done', el.checked);
   updateCheckCounts();
 }
 function updateCheckCounts(){
   document.querySelectorAll('.panel').forEach(p=>{
     const bar = p.querySelector('.check-count'); if(!bar) return;
-    const all = p.querySelectorAll('.ex-check');
-    const on = p.querySelectorAll('.ex-check:checked');
-    bar.innerHTML = `<b>${on.length}</b> de ${all.length} ejercicios realizados`;
+    bar.innerHTML = WEEK_META.map(w=>{
+      const all = p.querySelectorAll(`.ex-check[data-wk="${w.key}"]`).length;
+      const on = p.querySelectorAll(`.ex-check[data-wk="${w.key}"]:checked`).length;
+      return `<span class="wk-count${all&&on===all?' full':''}">${w.key} <b>${on}</b>/${all}</span>`;
+    }).join('');
   });
 }
 function resetChecks(btn){
   const panel = btn.closest('.panel'); if(!panel) return;
-  panel.querySelectorAll('.ex-check').forEach(el=>{ delete checkState[el.dataset.ck]; el.checked=false; const row=el.closest('tr'); if(row) row.classList.remove('done'); });
+  panel.querySelectorAll('.ex-check').forEach(el=>{ delete checkState[el.dataset.ck]; el.checked=false; const cell=el.closest('td'); if(cell) cell.classList.remove('done'); });
   saveChecks(); updateCheckCounts();
 }
 
@@ -3467,7 +3474,7 @@ function matrixTableHTML(rows, keyPrefix){
   const weekHeads = WEEK_META.map(w=>`<th>${w.label.replace('Semana ','S')}</th>`).join('');
   return `<div class="table-scroll wide" style="margin-bottom:22px;">
     <table>
-      <thead><tr><th class="ex-check-cell" title="Realizado">&#10003;</th><th></th><th>Ejercicio</th>${weekHeads}</tr></thead>
+      <thead><tr><th></th><th>Ejercicio</th>${weekHeads}</tr></thead>
       <tbody>${rows.map(r=>matrixRowHTML(r, keyPrefix)).join('')}</tbody>
     </table>
   </div>`;
@@ -3498,7 +3505,7 @@ function renderMuscle(key){
   <div class="muscle-head">
     <div>
       <h2 class="section-title">${MUSCLE_LABELS[key]||key}</h2>
-      <p class="section-desc" style="margin-bottom:0;">Matriz de series&times;reps por semana. Toca una fila para ver tempo, RIR y descanso. Marca el recuadro de cada ejercicio conforme lo vayas realizando. El músculo rezagado se entrena igual todos los días del bloque.</p>
+      <p class="section-desc" style="margin-bottom:0;">Matriz de series&times;reps por semana. Toca una fila para ver tempo, RIR y descanso. Marca el recuadro de cada semana (S1–S4) conforme vayas realizando cada ejercicio. El músculo rezagado se entrena igual todos los días del bloque.</p>
       <div class="check-bar"><span class="check-count"></span><button type="button" class="check-reset" onclick="resetChecks(this)">Reiniciar marcas</button></div>
     </div>
   </div>
