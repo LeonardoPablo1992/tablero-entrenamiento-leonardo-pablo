@@ -280,6 +280,24 @@
   .ex-row .ex-name-cell{display:flex;align-items:center;gap:4px;}
   .ex-row .ex-caret{font-size:10px;color:var(--text-faint);transition:transform .15s ease;}
   .ex-row.open .ex-caret{transform:rotate(90deg);}
+  .ex-check-cell{width:34px;}
+  .ex-check{
+    appearance:none;-webkit-appearance:none;margin:0;cursor:pointer;
+    width:20px;height:20px;border-radius:5px;border:1.5px solid var(--text-faint);
+    background:transparent;display:inline-grid;place-content:center;vertical-align:middle;
+    transition:background .12s ease, border-color .12s ease;
+  }
+  .ex-check:hover{border-color:var(--white);}
+  .ex-check::after{content:"";width:10px;height:6px;border-left:2.5px solid #1c1c1e;border-bottom:2.5px solid #1c1c1e;transform:rotate(-45deg) translate(1px,-1px) scale(0);transition:transform .12s ease;}
+  .ex-check:checked{background:var(--white);border-color:var(--white);}
+  .ex-check:checked::after{transform:rotate(-45deg) translate(1px,-1px) scale(1);}
+  .ex-check:focus-visible{outline:2px solid var(--white);outline-offset:2px;}
+  tbody tr.ex-row.done .ex-name-cell{color:var(--text-faint);text-decoration:line-through;}
+  tbody tr.ex-row.done td.num-cell{color:var(--text-faint);}
+  .check-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0 0 0;font-size:12px;color:var(--text-dim);}
+  .check-bar b{color:var(--white);}
+  .check-reset{background:transparent;border:1px solid var(--border-soft);color:var(--text-dim);border-radius:999px;padding:5px 12px;font:inherit;font-size:11px;letter-spacing:.3px;cursor:pointer;}
+  .check-reset:hover{border-color:var(--border);color:var(--white);}
 
   .super-chart{position:relative;height:280px;}
   .super-chart svg{width:100%;height:100%;overflow:visible;}
@@ -3393,13 +3411,16 @@ function matrixRowHTML(r, keyPrefix){
     const sets = pair[0];
     return `<td class="num num-cell${isNaVal(sets)?' off':''}">${fmtSet(pair)}</td>`;
   }).join('');
-  return `<tr class="ex-row" data-target="${id}" onclick="toggleExRow('${id}', this)">
+  const ck = checkKey(keyPrefix, r.name);
+  const done = isChecked(ck);
+  return `<tr class="ex-row${done?' done':''}" data-target="${id}" onclick="toggleExRow('${id}', this)">
+      <td class="ex-check-cell" onclick="event.stopPropagation()"><input type="checkbox" class="ex-check" aria-label="Marcar ${String(r.name).trim().replace(/"/g,'&quot;')} como realizado" data-ck="${ck}" ${done?'checked':''} onchange="onExCheck(this)"></td>
       <td><span class="combo-badge">${r.combo||'·'}</span></td>
       <td class="ex-name-cell"><span class="ex-caret">&#9656;</span>${r.name}</td>
       ${weekCells}
     </tr>
     <tr class="ex-meta-row" id="${id}">
-      <td colspan="${2+WEEK_META.length}">
+      <td colspan="${3+WEEK_META.length}">
         <div class="ex-meta-inline">
           <span><b>Tempo</b> ${r.tempo||'—'}</span>
           <span><b>RIR</b> ${(r.rir===null||r.rir===undefined)?'—':r.rir}</span>
@@ -3407,6 +3428,33 @@ function matrixRowHTML(r, keyPrefix){
         </div>
       </td>
     </tr>`;
+}
+
+const CHECK_STORE = 'tablero-lp-realizados-v1';
+let checkState = {};
+try{ checkState = JSON.parse(localStorage.getItem(CHECK_STORE) || '{}') || {}; }catch(e){ checkState = {}; }
+function saveChecks(){ try{ localStorage.setItem(CHECK_STORE, JSON.stringify(checkState)); }catch(e){} }
+function checkKey(prefix, name){ return prefix + '::' + String(name||'').trim(); }
+function isChecked(k){ return !!checkState[k]; }
+function onExCheck(el){
+  const k = el.dataset.ck;
+  if(el.checked) checkState[k] = true; else delete checkState[k];
+  saveChecks();
+  const row = el.closest('tr'); if(row) row.classList.toggle('done', el.checked);
+  updateCheckCounts();
+}
+function updateCheckCounts(){
+  document.querySelectorAll('.panel').forEach(p=>{
+    const bar = p.querySelector('.check-count'); if(!bar) return;
+    const all = p.querySelectorAll('.ex-check');
+    const on = p.querySelectorAll('.ex-check:checked');
+    bar.innerHTML = `<b>${on.length}</b> de ${all.length} ejercicios realizados`;
+  });
+}
+function resetChecks(btn){
+  const panel = btn.closest('.panel'); if(!panel) return;
+  panel.querySelectorAll('.ex-check').forEach(el=>{ delete checkState[el.dataset.ck]; el.checked=false; const row=el.closest('tr'); if(row) row.classList.remove('done'); });
+  saveChecks(); updateCheckCounts();
 }
 
 function toggleExRow(id, rowEl){
@@ -3419,7 +3467,7 @@ function matrixTableHTML(rows, keyPrefix){
   const weekHeads = WEEK_META.map(w=>`<th>${w.label.replace('Semana ','S')}</th>`).join('');
   return `<div class="table-scroll wide" style="margin-bottom:22px;">
     <table>
-      <thead><tr><th></th><th>Ejercicio</th>${weekHeads}</tr></thead>
+      <thead><tr><th class="ex-check-cell" title="Realizado">&#10003;</th><th></th><th>Ejercicio</th>${weekHeads}</tr></thead>
       <tbody>${rows.map(r=>matrixRowHTML(r, keyPrefix)).join('')}</tbody>
     </table>
   </div>`;
@@ -3450,7 +3498,8 @@ function renderMuscle(key){
   <div class="muscle-head">
     <div>
       <h2 class="section-title">${MUSCLE_LABELS[key]||key}</h2>
-      <p class="section-desc" style="margin-bottom:0;">Matriz de series&times;reps por semana. Toca una fila para ver tempo, RIR y descanso. El músculo rezagado se entrena igual todos los días del bloque.</p>
+      <p class="section-desc" style="margin-bottom:0;">Matriz de series&times;reps por semana. Toca una fila para ver tempo, RIR y descanso. Marca el recuadro de cada ejercicio conforme lo vayas realizando. El músculo rezagado se entrena igual todos los días del bloque.</p>
+      <div class="check-bar"><span class="check-count"></span><button type="button" class="check-reset" onclick="resetChecks(this)">Reiniciar marcas</button></div>
     </div>
   </div>
 
@@ -3509,6 +3558,7 @@ function buildPanels(){
 buildKpis();
 buildTabs();
 buildPanels();
+updateCheckCounts();
 renderChartsFor('resumen');
 </script>
 </body>
